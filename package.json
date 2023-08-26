@@ -56,8 +56,8 @@
     "node": ">=16.11.0"
   },
   "devDependencies": {
-    "@babel/parser": "^7.22.7",
-    "@babel/types": "^7.22.5",
+    "@babel/parser": "^7.22.11",
+    "@babel/types": "^7.22.11",
     "@rollup/plugin-alias": "^4.0.3",
     "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-json": "^6.0.0",
