@@ -29,16 +29,31 @@ export interface Ref<T = any> {
    * We need this to be in public d.ts but don't want it to show up in IDE
    * autocomplete, so we use a private Symbol instead.
    */
+  /**
+   * 用于标识是否为ref对象，通过isRef方法判断，
+   * 由于RefSymbol没有export，外界无法通过属性名称访问该字段，因此智能通过isRef判断
+   */
   [RefSymbol]: true
 }
-
+/**
+ * 该类型包含ref的基础字段
+ */
 type RefBase<T> = {
   dep?: Dep
   value: T
 }
-
+/**
+ * 用于追踪引用对象的值的访问，以便在引用对象的值被访问时建立响应式依赖关系。
+ */
 export function trackRefValue(ref: RefBase<any>) {
+  /**
+   *  activeEffect 是当前正在运行的响应式副作用函数（effect）
+   */
   if (shouldTrack && activeEffect) {
+    /**
+     * 将ref引用转换为原始值：确保在追踪依赖时，简历的是对原始值的依赖关
+     * 系，而不是引用对象本身
+     */
     ref = toRaw(ref)
     if (__DEV__) {
       trackEffects(ref.dep || (ref.dep = createDep()), {
@@ -47,11 +62,18 @@ export function trackRefValue(ref: RefBase<any>) {
         key: 'value'
       })
     } else {
+      /**
+       * trackEffects 函数来追踪对引用对象的 value 属性的访问操作。
+       * 这会在当前的响应式副作用函数（effect）中建立依赖关系，以便在
+       * 引用对象的值发生变化时，能够触发副作用函数的更新
+       */
       trackEffects(ref.dep || (ref.dep = createDep()))
     }
   }
 }
-
+/**
+ * 用于触发引用对象值的更新，从而通知相关的响应式副作用函数（effect）进行更新。
+ */
 export function triggerRefValue(ref: RefBase<any>, newVal?: any) {
   ref = toRaw(ref)
   const dep = ref.dep
@@ -132,6 +154,8 @@ function createRef(rawValue: unknown, shallow: boolean) {
 }
 
 class RefImpl<T> {
+  // TODO:回顾_value和_rawValue
+
   private _value: T
   private _rawValue: T
 
@@ -142,6 +166,11 @@ class RefImpl<T> {
     value: T,
     public readonly __v_isShallow: boolean
   ) {
+    /**
+     * 存储引用对象的原始值，如果引用对象被标记为浅层引用，则_value和_rawValue相同，均为原始值
+     * 如果非浅层引用，则会被转换为响应式对象。
+     *
+     */
     this._rawValue = __v_isShallow ? value : toRaw(value)
     this._value = __v_isShallow ? value : toReactive(value)
   }
